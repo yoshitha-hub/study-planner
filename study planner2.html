@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Study Planner with Notifications</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Typed.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+  <!-- particles.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+  <style>
+    /* Full-bleed gradient + subtle noise look */
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: "Arial", sans-serif;
+      overflow: auto;
+      background: linear-gradient(135deg, #101827 0%, #1b2a4a 25%, #314e8a 60%, #8ec5ff 100%);
+      color: #222;
+    }
+
+    /* particles container sits behind everything */
+    #particles-js {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 0;
+      pointer-events: none; /* allow clicks through particles */
+    }
+
+    /* glassy container sits above particles */
+    .page-wrap {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      box-sizing: border-box;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 760px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+      backdrop-filter: blur(8px) saturate(120%);
+      -webkit-backdrop-filter: blur(8px) saturate(120%);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(2,6,23,0.55), inset 0 1px 0 rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: #f4f8fb;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .logo-plate {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 22px;
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      color: #eaf4ff;
+      letter-spacing: -0.4px;
+    }
+
+    .typed-sub {
+      margin: 6px 0 0 0;
+      font-size: 15px;
+      color: #d7e8ff;
+      opacity: 0.95;
+    }
+
+    .desc {
+      color: rgba(215,232,255,0.9);
+      margin: 18px 0 22px 0;
+      line-height: 1.4;
+    }
+
+    form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    input[type="text"], input[type="time"], input[type="date"], select {
+      padding: 10px 12px;
+      font-size: 14px;
+      flex: 1 1 160px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: #fff;
+      outline: none;
+      transition: transform .09s ease, box-shadow .12s;
+      box-shadow: 0 2px 8px rgba(4,7,18,0.25) inset;
+    }
+
+    input::placeholder { color: rgba(255,255,255,0.6); }
+
+    input:focus {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(2,6,23,0.55);
+      border-color: rgba(255,255,255,0.12);
+    }
+
+    button {
+      background: linear-gradient(180deg, #2b59b2, #123a7f);
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 8px 20px rgba(12,30,80,0.45);
+      transition: transform .12s ease, box-shadow .12s;
+    }
+
+    button:hover { transform: translateY(-3px); }
+    button:active { transform: translateY(-1px) scale(.995); }
+
+    ul { list-style: none; padding: 0; margin: 0; max-height: 300px; overflow: auto; }
+    li {
+      background: rgba(255,255,255,0.04);
+      margin: 8px 0;
+      padding: 12px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      border-left: 4px solid rgba(255,255,255,0.04);
+      transition: transform .12s ease, background .12s;
+    }
+
+    li:hover { transform: translateY(-2px); background: rgba(255,255,255,0.055); }
+
+    .remove {
+      color: #ffb3b8;
+      cursor: pointer;
+      font-size: 20px;
+      margin-left: 6px;
+      user-select: none;
+    }
+
+    .timeline {
+      font-size: 13px;
+      color: rgba(215,232,255,0.9);
+      margin-top: 6px;
+    }
+
+    /* small-screen tweaks */
+    @media (max-width: 640px) {
+      .container { padding: 18px; border-radius: 12px; }
+      h1 { font-size: 22px; }
+      .logo-plate { width: 52px; height: 52px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Particles canvas -->
+  <div id="particles-js"></div>
+
+  <div class="page-wrap">
+    <div class="container">
+      <header>
+        <div class="logo-plate">SS</div>
+        <div>
+          <h1>Smart Study Planner</h1>
+          <div class="typed-sub"><span id="typed"></span></div>
+        </div>
+      </header>
+
+      <p class="desc">
+        Organize study goals and get notified when the task time is reached. Tasks are stored locally, and reminders appear when it's time to study.
+      </p>
+
+      <form id="taskForm">
+        <input type="text" id="taskTitle" placeholder="Enter study goal..." required />
+        <input type="time" id="taskTime" required />
+        <input type="date" id="taskDate" required />
+        <button type="submit">Add Task</button>
+      </form>
+
+      <ul id="taskList"></ul>
+    </div>
+  </div>
+
+  <script>
+    // ========== Typed.js initialization ==========
+    // Strings can be customized
+    const typed = new Typed('#typed', {
+      strings: [
+        'Focus. Plan. Achieve.',
+        'Get gentle reminders when study time arrives.',
+        'Save tasks locally — works offline for stored tasks.'
+      ],
+      typeSpeed: 45,
+      backSpeed: 28,
+      backDelay: 1600,
+      loop: true,
+      smartBackspace: true,
+      showCursor: true,
+      cursorChar: '⎯'
+    });
+
+    // ========== particles.js configuration ==========
+    /* If you want different behavior: change number.value, shape, size, move.speed, etc. */
+    particlesJS('particles-js', {
+      "particles": {
+        "number": {
+          "value": 60,
+          "density": {
+            "enable": true,
+            "value_area": 900
+          }
+        },
+        "color": {
+          "value": ["#88d1ff", "#7fd3a6", "#d1a8ff", "#ffd18a"]
+        },
+        "shape": {
+          "type": ["circle", "triangle", "edge"],
+          "stroke": { "width": 0 },
+          "polygon": { "nb_sides": 5 }
+        },
+        "opacity": {
+          "value": 0.75,
+          "random": true,
+          "anim": { "enable": false }
+        },
+        "size": {
+          "value": 6,
+          "random": true,
+          "anim": { "enable": false }
+        },
+        "line_linked": {
+          "enable": true,
+          "distance": 160,
+          "color": "#9fc9ff",
+          "opacity": 0.08,
+          "width": 1
+        },
+        "move": {
+          "enable": true,
+          "speed": 1.8,
+          "direction": "none",
+          "random": true,
+          "straight": false,
+          "out_mode": "bounce",
+          "bounce": true
+        }
+      },
+      "interactivity": {
+        "detect_on": "window",
+        "events": {
+          "onhover": { "enable": true, "mode": "grab" },
+          "onclick": { "enable": true, "mode": "push" },
+          "resize": true
+        },
+        "modes": {
+          "grab": { "distance": 140, "line_linked": { "opacity": 0.12 } },
+          "bubble": { "distance": 200, "size": 8, "duration": 2, "opacity": 0.6 },
+          "repulse": { "distance": 120 },
+          "push": { "particles_nb": 3 },
+          "remove": { "particles_nb": 2 }
+        }
+      },
+      "retina_detect": true
+    });
+
+    // ========== Original tasks code (kept, with same behavior) ==========
+    const form = document.getElementById('taskForm');
+    const list = document.getElementById('taskList');
+    let tasks = JSON.parse(localStorage.getItem('studyTasks') || '[]');
+
+    // Ask for notification permission
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      Notification.requestPermission();
+    }
+
+    function renderTasks() {
+      // sort tasks by incoming date/time (optional but helpful)
+      tasks.sort((a,b) => {
+        const ta = new Date(${a.date}T${a.time}:00);
+        const tb = new Date(${b.date}T${b.time}:00);
+        return ta - tb;
+      });
+
+      list.innerHTML = '';
+      if (tasks.length === 0) {
+        const empty = document.createElement('li');
+        empty.style.justifyContent = 'center';
+        empty.style.color = 'rgba(255,255,255,0.6)';
+        empty.style.background = 'transparent';
+        empty.textContent = 'No tasks yet — add a study goal to get started!';
+        list.appendChild(empty);
+        return;
+      }
+
+      tasks.forEach((task, idx) => {
+        let li = document.createElement('li');
+        li.innerHTML = `
+          <div style="flex:1;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div style="width:10px; height:10px; border-radius:50%; background:linear-gradient(90deg,#6ee7b7,#60a5fa); box-shadow: 0 4px 10px rgba(2,6,23,0.45)"></div>
+              <strong style="font-size:15px; color:#ffffffcc;">${escapeHtml(task.title)}</strong>
+            </div>
+            <div class="timeline">${formatTimeForDisplay(task.time)} • ${task.date}</div>
+          </div>
+          <div style="display:flex; align-items:center;">
+            <span class="remove" onclick="removeTask(${idx})" title="Remove task">&times;</span>
+          </div>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function removeTask(idx) {
+      tasks.splice(idx, 1);
+      localStorage.setItem('studyTasks', JSON.stringify(tasks));
+      renderTasks();
+    }
+
+    // Check tasks every 30 seconds for reminders
+    setInterval(() => {
+      const now = new Date();
+      tasks.forEach((task, index) => {
+        if (!task.notified) {
+          const dateTimeString = ${task.date}T${task.time}:00;
+          const taskTime = new Date(dateTimeString);
+
+          if (now >= taskTime) {
+            showNotification(task);
+            tasks[index].notified = true;
+            localStorage.setItem('studyTasks', JSON.stringify(tasks));
+            renderTasks(); // update UI (if you want a visual mark later)
+          }
+        }
+      });
+    }, 30000); // every 30s
+
+    function showNotification(task) {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Study Reminder', {
+          body: Time for: ${task.title} (${formatTimeForDisplay(task.time)} on ${task.date})
+          // You can add icon property here
+        });
+      } else {
+        alert(Reminder: ${task.title} (${formatTimeForDisplay(task.time)} on ${task.date}));
+      }
+    }
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const title = document.getElementById("taskTitle").value.trim();
+      const time = document.getElementById("taskTime").value.trim();
+      const date = document.getElementById("taskDate").value;
+
+      if (!title || !time || !date) return;
+
+      tasks.push({ title, time, date, notified: false });
+      localStorage.setItem("studyTasks", JSON.stringify(tasks));
+
+      form.reset();
+      renderTasks();
+    });
+
+    // small utility to escape HTML inserted into innerHTML for safety
+    function escapeHtml(unsafe) {
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function formatTimeForDisplay(value) {
+      // value is like "14:30" or "09:05" -> convert to 12h with am/pm
+      if (!value) return '';
+      const [hh, mm] = value.split(':').map(Number);
+      const ampm = hh >= 12 ? 'PM' : 'AM';
+      const hr = ((hh + 11) % 12) + 1;
+      return ${hr}:${mm.toString().padStart(2,'0')} ${ampm};
+    }
+
+    // Initial load
+    renderTasks();
+    window.removeTask = removeTask;
+  </script>
+</body>
+</html>
